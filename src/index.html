@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<!--
+<meta name="viewport" content="width=device-width, initial-scale=1">
+-->
+
+<head>
+	<link rel="stylesheet" href="style.css">
+	<script src="https://kit.fontawesome.com/b4337282b2.js" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<title>Clock In/Out</title>
+
+<script>
+
+// program state variables
+class State {
+	constructor(){
+		this.clockinState = true;
+		this.clockData = [];
+	}
+}
+
+state = new State();
+
+
+
+
+function time_convert_24_to_12(time) {
+  // Check correct time format and split into components
+  time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+
+  if (time.length > 1) { // If time format correct
+    time = time.slice (1);  // Remove full string match value
+    time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
+    time[0] = +time[0] % 12 || 12; // Adjust hours
+  }
+  return time.join (''); // return adjusted time or original string
+}
+
+
+
+
+function render_clock_history(state) {
+	// take in state and render clock in / out history
+	render_data = '';
+	console.log( 'state.clockData = ');
+	console.log(state.clockData);
+
+	// for each entry
+	for(var entry in state.clockData) {
+		console.log(state.clockData[entry]);
+		// for all data in each dict
+			
+
+			render_data += `<section class='flex-section'>
+				<div class="flex-div job-data-column-left">`;
+
+    
+			if( state.clockData[entry]["clockinState"] == false) {
+				render_data += '<i class="fas fa-calendar-plus job-list-info-historical"></i>Clock In</div>\n';
+			}
+			else if( state.clockData[entry]["clockinState"] == true){
+				render_data += '<i class="fas fa-calendar-plus job-list-info-historical"></i>Clock Out</div>\n';
+			}
+    
+    
+			var time = time_convert_24_to_12( state.clockData[entry]["time"] );
+			var date = state.clockData[entry]["date"];
+			// idk why replace doesn't work with one function call, don't have time to figure out why, keeping it in twice for desired results
+			date = date.replace('-', '/');
+			date = date.replace('-', '/');
+    
+
+			// super hacky way to convert the format that the date element gives me
+			// obv theres a more effecient way to do it but for the sake of this demo, this will do
+			year = date.substring(0, date.indexOf('/'));
+			date = date += '/'+year;
+			date = date.slice( date.indexOf('/')+1 );
+
+			render_data += `<div class="flex-div"><span class="float-left">` + date + "<br>" + time +'<br>Project: ' + state.clockData[entry]["project"]
+			+ '<br>Location: ' + state.clockData[entry]["location"] + "</span></div>\n</section>";
+	}
+  
+	$("#clockData").html( render_data );
+  
+}
+
+  
+  
+$(document).ready(function(){
+  $(".btn-clockoutIn").click(function(){
+    
+  	// change the state to clockout
+  	state.clockinState = !state.clockinState;
+
+  	// change the display text of button
+  	if( state.clockinState == false ){
+  		$(".btn-clockoutIn").text("Clock Out");
+  	}
+   	if( state.clockinState == true ){
+  		$(".btn-clockoutIn").text("Clock In");
+  	}
+  	// append all data to historical list
+  	state.clockData.push( {'clockinState':state.clockinState,
+  							'time':$("#time").val(),
+  							'date':$("#date").val(),
+  							'project':$("#project").val(),
+  							'location':$("#location").val()
+  							} );
+    
+  	render_clock_history( state );
+  });
+});
+
+
+</script>
+
+
+
+</head>
+
+<section id="section-job-information">
+
+	<div class="topnav">
+
+		<div class="topnav-centered">
+	    	<a class="topnav-centered"><i class="fab fa-pied-piper topnav-elem"></i></a>
+	    </div>
+	  
+	  	<div class="topnav-left">
+		  	<a><i class="fas fa-chevron-left icon-left topnav-elem"></i></a>
+		</div>
+
+	  	<div class="topnav-right">  
+	    	<a><i class="fas fa-ellipsis-v topnav-elem-smaller"></i></a>
+	  	</div>
+	  
+	</div>
+
+
+	<div id="div-clockout">
+		<div class="options-nav">
+		 	<div class="topnav-centered">
+		    	<a><span class="icon-large"><i class="far fa-user-circle topnav-elem"></i></span></a>
+		  	</div>
+		  
+		<a><span class="options-nav-text"><i class="far fa-comment-alt white"></i><span class='span-notes'>Notes</span></a>
+
+		<div class="topnav-right">
+		 	<span class="options-nav-text">  
+		    	<a href="#about">Edit</a>
+		    </span>
+		</div>	  
+	</div>
+
+
+				
+	<h1 style="color:white; margin-top: 15px; margin-bottom: 15px;">John Smith</h1>
+
+	<button type="button" class="btn-clockoutIn" id="btn-clockoutIn">Clock In</button>
+			
+	<select class='dropdown'>
+	  <option value="25">Job Code 	(25) Carpet Installation</option>
+	  <option value="50">Job Code 	(50) Ceiling Installation</option>
+	  <option value="75">Job Code 	(75) Elevator Maintenance</option>
+	  <option value="100">Job Code 	(100) Emergency Maintenance</option>
+	</select>
+
+
+	</div>
+
+
+
+
+
+	<form>
+		<div class='div-job-details'>
+
+			<span id="clockData"></span>
+
+
+
+
+
+			<section class="flex-section">
+				<div class="flex-div job-data-column-left"><i class="fas fa-calendar-plus job-list-info"></i> Date</div>
+				<div class="flex-div"><span class="float-left">
+
+					<input type="date" id="date" class="textbox">
+
+
+				</span></div>
+			</section>
+
+			<section class='flex-section'>
+				<div class="flex-div job-data-column-left"><i class="fas fa-clock job-list-info"></i> Time</div>
+				<div class="flex-div"><span class="float-left">
+				<input type="time" class="textbox-time" id="time">
+
+
+				</span></div>
+			</section>
+
+			<section class='flex-section'>
+				<div class="flex-div job-data-column-left"><i class="fas fa-print job-list-info"></i> Project</span></div>
+				<div class="flex-div float-left">
+
+					<input type='textbox' class='textbox' id="project">
+
+
+				</div>
+			</section>
+
+			<section class='flex-section'>
+				<div class="flex-div job-data-column-left"><i class="fas fa-print job-list-info"></i> Location</span></div>
+				<div class="flex-div float-left">
+
+						<input type='textbox' class='textbox' id="location">
+
+
+
+				</div>
+			</section>
+
+			<section class='flex-section'>
+				<div class="flex-div job-data-column-left"><i class="fas fa-cog job-list-info"></i> 	Equipment Scanned</span></div>
+				<div class="flex-div float-left"><i class="fas fa-chevron-right icon-right"></i></div>
+			</section>
+	 
+		</div>
+	</form>
+
+
+	<div class="clockout-bottom-buttons-div">
+		<button type="button" class="btn-half-size float-left"><span class="t"><i class="fas fa-clock"></i>Pause Job</span></button>
+		
+		<button type="button" class="btn-half-size float-right">
+			<span style="text-align: center">
+				<i class="fas fa-calendar-plus"></i>View Schedule
+			</span>
+		</button>
+
+	</div>
+
+
